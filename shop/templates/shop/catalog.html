@@ -1,0 +1,89 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Главная - Тула Садовая{% endblock %}
+
+{% block content %}
+<!-- Герой-секция -->
+<section class="hero-section bg-gradient-success text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">Всё для вашего сада</h1>
+                <p class="lead mb-4">Качественные садовые инструменты, семена и удобрения для богатого урожая</p>
+                <a href="#categories" class="btn btn-light btn-lg">
+                    <i class="fas fa-shopping-basket me-2"></i>Начать покупки
+                </a>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://via.placeholder.com/500x300/28a745/ffffff?text=Садовый+рай" 
+                     alt="Садовый магазин" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Категории -->
+<section id="categories" class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Категории товаров</h2>
+        <div class="row">
+            {% for category in categories %}
+            <div class="col-md-4 mb-4">
+                <div class="card category-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-tools fa-3x text-success mb-3"></i>
+                        <h5 class="card-title">{{ category.name }}</h5>
+                        <p class="card-text text-muted">{{ category.description|default:"Лучшие товары для сада" }}</p>
+                        <a href="#" class="btn btn-outline-success">Смотреть товары</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Категории скоро появятся</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Популярные товары -->
+<section id="featured" class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">Популярные товары</h2>
+        <div class="row">
+            {% for product in products %}
+                {% include 'shop/includes/product_card.html' with product=product %}
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">Товары скоро появятся</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Преимущества -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-4 mb-4">
+                <i class="fas fa-shipping-fast fa-2x text-success mb-3"></i>
+                <h5>Доставка</h5>
+                <p class="text-muted">Доставляем заказы в течение 1-2 дней</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <i class="fas fa-seedling fa-2x text-success mb-3"></i>
+                <h5>Качественные товары</h5>
+                <p class="text-muted">Только проверенные производители</p>
+            </div>
+            <div class="col-md-4 mb-4">
+                <i class="fas fa-headset fa-2x text-success mb-3"></i>
+                <h5>Поддержка 24/7</h5>
+                <p class="text-muted">Всегда готовы помочь с выбором</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
