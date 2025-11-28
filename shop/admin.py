@@ -253,6 +253,18 @@ class ProductImageAdmin(admin.ModelAdmin):
 
     image_preview.short_description = 'Превью'
 
+    class ChatMessageAdmin(admin.ModelAdmin):
+        list_display = ['user', 'message_short', 'created_at', 'is_read']
+        list_filter = ['created_at', 'is_read']
+        search_fields = ['user__first_name', 'user__last_name', 'message']
+
+        def message_short(self, obj):
+            return obj.message[:50] + '...' if len(obj.message) > 50 else obj.message
+
+        message_short.short_description = 'Сообщение'
+
+    admin.site.register(ChatMessage, ChatMessageAdmin)
+
 
 
 admin.site.register(Customer, CustomerAdmin)

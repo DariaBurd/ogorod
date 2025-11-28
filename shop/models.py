@@ -546,3 +546,18 @@ class CartItem(models.Model):
         verbose_name = 'Позиция корзины'
         verbose_name_plural = 'Позиции корзины'
         unique_together = ['cart', 'product']
+
+
+class ChatMessage(models.Model):
+    user = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    message = models.TextField(max_length=1000)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ['created_at']
+        verbose_name = 'Сообщение чата'
+        verbose_name_plural = 'Сообщения чата'
+
+    def __str__(self):
+        return f"{self.user}: {self.message[:50]}..."
