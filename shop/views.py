@@ -46,3 +46,23 @@ def user_login(request):
         form = CustomerLoginForm()
 
     return render(request, 'shop/login.html', {'form': form})
+
+
+from django.contrib.auth.decorators import login_required
+from .models import ChatMessage
+
+@login_required
+def chat_room(request):
+    messages = ChatMessage.objects.all()[:50]  # последние 50 сообщений
+    return render(request, 'shop/chat_room.html', {'messages': messages})
+
+@login_required
+def send_message(request):
+    if request.method == 'POST':
+        message_text = request.POST.get('message')
+        if message_text:
+            ChatMessage.objects.create(
+                user=request.user,
+                message=message_text
+            )
+    return redirect('shop:chat_room')

@@ -1,0 +1,36 @@
+<!-- shop/templates/shop/chat_room.html -->
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="chat-container">
+    <h2>💬 БОЛТАЛКА</h2>
+
+    <div class="messages" id="messages">
+        {% for message in messages %}
+        <div class="message {% if message.user == user %}my-message{% endif %}">
+            <strong>{{ message.user.first_name }}:</strong>
+            {{ message.message }}
+            <small>{{ message.created_at|time:"H:i" }}</small>
+        </div>
+        {% endfor %}
+    </div>
+
+    <form method="post" action="{% url 'shop:send_message' %}">
+        {% csrf_token %}
+        <div class="input-group">
+            <input type="text" name="message" placeholder="Напишите сообщение..." required>
+            <button type="submit">📨</button>
+        </div>
+    </form>
+</div>
+
+<style>
+.chat-container { max-width: 800px; margin: 0 auto; }
+.messages { height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; margin-bottom: 20px; }
+.message { margin-bottom: 10px; padding: 8px; border-radius: 8px; }
+.my-message { background: #e3f2fd; text-align: right; }
+.input-group { display: flex; }
+.input-group input { flex: 1; padding: 10px; }
+.input-group button { padding: 10px 20px; }
+</style>
+{% endblock %}
