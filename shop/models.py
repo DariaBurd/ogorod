@@ -561,3 +561,22 @@ class ChatMessage(models.Model):
 
     def __str__(self):
         return f"{self.user}: {self.message[:50]}..."
+
+
+class ProductImport(models.Model):
+    STATUS_CHOICES = [
+        ('pending', '⏳ В обработке'),
+        ('success', '✅ Успешно'),
+        ('error', '❌ Ошибка'),
+    ]
+
+    file = models.FileField(upload_to='imports/', verbose_name='Excel файл')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    imported_count = models.IntegerField(default=0, verbose_name='Импортировано товаров')
+    error_count = models.IntegerField(default=0, verbose_name='Ошибок')
+    errors = models.TextField(blank=True, verbose_name='Ошибки импорта')
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(Customer, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Импорт от {self.created_at.strftime('%d.%m.%Y %H:%M')}"

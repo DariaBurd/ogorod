@@ -1,4 +1,4 @@
-# Django
+
 *.log
 *.pot
 *.pyc
@@ -7,8 +7,11 @@ db.sqlite3
 media/
 staticfiles/
 
-# Environments
+
 .env
+*.env
+.env.local
+.env.production
 .venv
 env/
 venv/
@@ -16,13 +19,14 @@ ENV/
 env.bak/
 venv.bak/
 
-# IDE
+
 .vscode/
 .idea/
 *.swp
 *.swo
+*.code-workspace
 
-# OS
+
 .DS_Store
 .DS_Store?
 ._*
@@ -30,7 +34,28 @@ venv.bak/
 .Trashes
 ehthumbs.db
 Thumbs.db
+desktop.ini
 
-# Project specific
+
 /instance/
 /.webassets-cache
+
+)
+secret_key.txt
+
+
+local_settings.py
+settings_local.py
+
+
+temp/
+tmp/
+*.tmp
+*.temp
+
+
+logs/
+*.log
+
+
+uploads/

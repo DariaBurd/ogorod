@@ -1,0 +1,43 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>📥 Импорт товаров из Excel</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label">Выберите Excel файл:</label>
+                    {{ form.file }}
+                </div>
+                <button type="submit" class="btn btn-success">🚀 Запустить импорт</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <h5>📋 Формат Excel файла:</h5>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Поле</th>
+                    <th>Обязательно</th>
+                    <th>Пример</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>Название</td><td>✅</td><td>Саженец яблони</td></tr>
+                <tr><td>Описание</td><td>❌</td><td>Описание товара...</td></tr>
+                <tr><td>Краткое описание</td><td>❌</td><td>Краткое описание</td></tr>
+                <tr><td>Цена</td><td>✅</td><td>1500</td></tr>
+                <tr><td>Старая цена</td><td>❌</td><td>1800</td></tr>
+                <tr><td>Количество</td><td>❌</td><td>10</td></tr>
+                <tr><td>Категория</td><td>❌</td><td>Саженцы</td></tr>
+                <tr><td>Изображение</td><td>❌</td><td>https://example.com/image.jpg</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

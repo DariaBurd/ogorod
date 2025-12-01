@@ -31,3 +31,19 @@ class CustomerLoginForm(AuthenticationForm):
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'placeholder': 'Пароль'})
     )
+
+
+from django import forms
+from .models import ProductImport
+
+
+class ProductImportForm(forms.ModelForm):
+    class Meta:
+        model = ProductImport
+        fields = ['file']
+
+    def clean_file(self):
+        file = self.cleaned_data['file']
+        if not file.name.endswith(('.xlsx', '.xls')):
+            raise forms.ValidationError('Поддерживаются только Excel файлы (.xlsx, .xls)')
+        return file

@@ -65,3 +65,118 @@ def send_message(request):
                 message=message_text
             )
     return redirect('shop:chat_room')
+
+
+import pandas as pd
+import requests
+from django.core.files.base import ContentFile
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import ProductImport
+from .forms import ProductImportForm
+
+
+def is_admin(user):
+    return user.is_staff
+
+
+@login_required
+@user_passes_test(is_admin)
+def product_import(request):
+    if request.method == 'POST':
+        form = ProductImportForm(request.POST, request.FILES)
+        if form.is_valid():
+            import_task = form.save(commit=False)
+            import_task.created_by = request.user
+            import_task.save()
+
+            # Запускаем обработку
+            process_excel_import(import_task)
+
+            messages.success(request,
+                             f'Импорт завершен! Успешно: {import_task.imported_count}, Ошибок: {import_task.error_count}')
+            return redirect('shop:import_history')
+    else:
+        form = ProductImportForm()
+
+    return render(request, 'shop/product_import.html', {'form': form})
+
+
+def process_excel_import(import_task):
+    try:
+        # Читаем Excel
+        df = pd.read_excel(import_task.file.path)
+
+        success_count = 0
+        error_count = 0
+        errors = []
+
+        for index, row in df.iterrows():
+            try:
+                # Создаем товар
+                product = Product(
+                    name=row['Название'],
+                    description=row.get('Описание', ''),
+                    short_description=row.get('Краткое описание', ''),
+                    price=row['Цена'],
+                    old_price=row.get('Старая цена'),
+                    quantity=row.get('Количество', 0),
+                    category=get_or_create_category(row.get('Категория', 'Разное')),
+                    is_active=True
+                )
+
+                # Загружаем изображение
+                image_url = row.get('Изображение')
+                if image_url and pd.notna(image_url):
+                    product.image = download_image(image_url, product.name)
+
+                product.save()
+                success_count += 1
+
+            except Exception as e:
+                error_count += 1
+                errors.append(f"Строка {index + 2}: {str(e)}")
+
+        # Обновляем статус импорта
+        import_task.status = 'success'
+        import_task.imported_count = success_count
+        import_task.error_count = error_count
+        import_task.errors = '\n'.join(errors)
+        import_task.save()
+
+    except Exception as e:
+        import_task.status = 'error'
+        import_task.errors = str(e)
+        import_task.save()
+
+
+def get_or_create_category(name):
+    category, created = Category.objects.get_or_create(
+        name=name,
+        defaults={'slug': slugify(name), 'is_active': True}
+    )
+    return category
+
+
+def download_image(url, product_name):
+    """Загружает изображение по URL"""
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        # Создаем имя файла
+        file_extension = url.split('.')[-1].lower()
+        if file_extension not in ['jpg', 'jpeg', 'png', 'gif']:
+            file_extension = 'jpg'
+
+        filename = f"{slugify(product_name)}.{file_extension}"
+
+        # Сохраняем изображение
+        from io import BytesIO
+        from django.core.files import File
+
+        image_content = ContentFile(response.content)
+        return File(image_content, name=filename)
+
+    except Exception as e:
+        print(f"Ошибка загрузки изображения: {e}")
+        return None
