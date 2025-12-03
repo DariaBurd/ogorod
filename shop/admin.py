@@ -73,6 +73,94 @@ class ProductAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    change_list_template = 'admin/shop/product/change_list.html'
+
+    def get_urls(self):
+        from django.urls import path
+        urls = super().get_urls()
+        custom_urls = [
+            path('import-excel/', self.admin_site.admin_view(self.import_excel_view), name='product_import_excel'),
+        ]
+        return custom_urls + urls
+
+    def import_excel_view(self, request):
+        """Представление для импорта Excel"""
+        from django.shortcuts import render, redirect
+        from django.contrib import messages
+        import pandas as pd
+        import requests
+        from io import BytesIO
+        from django.core.files.base import ContentFile
+        from django.core.files import File
+
+        if request.method == 'POST' and request.FILES.get('excel_file'):
+            try:
+                excel_file = request.FILES['excel_file']
+
+                # Проверяем расширение
+                if not excel_file.name.endswith(('.xlsx', '.xls')):
+                    messages.error(request, 'Поддерживаются только файлы Excel (.xlsx, .xls)')
+                    return redirect('admin:shop_product_changelist')
+
+                # Читаем Excel
+                df = pd.read_excel(excel_file)
+
+                created_count = 0
+                error_count = 0
+
+                for index, row in df.iterrows():
+                    try:
+                        # Получаем или создаем категорию
+                        category_name = row.get('Категория', 'Разное')
+                        category, _ = Category.objects.get_or_create(
+                            name=category_name,
+                            defaults={'slug': category_name.lower().replace(' ', '-'), 'is_active': True}
+                        )
+
+                        # Создаем товар
+                        product = Product(
+                            name=row['Название'],
+                            description=str(row.get('Описание', '')),
+                            short_description=str(row.get('Краткое описание', '')),
+                            price=float(row['Цена']),
+                            old_price=float(row.get('Старая цена', 0)) if pd.notna(row.get('Старая цена')) else None,
+                            quantity=int(row.get('Количество', 0)),
+                            category=category,
+                            is_active=True
+                        )
+
+                        # Загружаем изображение если есть URL
+                        image_url = row.get('Изображение')
+                        if pd.notna(image_url) and str(image_url).startswith('http'):
+                            try:
+                                response = requests.get(str(image_url), timeout=10)
+                                if response.status_code == 200:
+                                    # Генерируем имя файла
+                                    file_extension = str(image_url).split('.')[-1].lower()
+                                    if file_extension not in ['jpg', 'jpeg', 'png', 'gif', 'webp']:
+                                        file_extension = 'jpg'
+
+                                    filename = f"{product.name.lower().replace(' ', '_')}_{index}.{file_extension}"
+                                    image_content = ContentFile(response.content)
+                                    product.image.save(filename, File(image_content))
+                            except:
+                                pass
+
+                        product.save()
+                        created_count += 1
+
+                    except Exception as e:
+                        error_count += 1
+                        print(f"Ошибка в строке {index}: {e}")
+
+                messages.success(request, f'✅ Импорт завершен! Создано товаров: {created_count}, Ошибок: {error_count}')
+
+            except Exception as e:
+                messages.error(request, f'❌ Ошибка при обработке файла: {str(e)}')
+
+            return redirect('admin:shop_product_changelist')
+
+        return render(request, 'admin/shop/import_form.html')
 
     def discount_percent_display(self, obj):
         if obj.has_discount:
