@@ -1,0 +1,87 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'shop:catalog' %}">Главная</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'shop:category_products' product.category.slug %}">{{ product.category.name }}</a></li>
+            <li class="breadcrumb-item active">{{ product.name }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="product-image">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid">
+            </div>
+        </div>
+        
+        <div class="col-md-6">
+            <h1>{{ product.name }}</h1>
+            
+            <div class="price-section mb-3">
+                {% if product.has_discount %}
+                    <span class="old-price text-muted" style="text-decoration: line-through;">
+                        {{ product.old_price }} руб.
+                    </span>
+                    <span class="current-price text-danger h3">
+                        {{ product.price }} руб.
+                    </span>
+                    <span class="badge bg-danger">-{{ product.discount_percent }}%</span>
+                {% else %}
+                    <span class="current-price h3">{{ product.price }} руб.</span>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {% if product.available %}
+                    <span class="badge bg-success">В наличии</span>
+                    <span class="text-muted">Осталось: {{ product.quantity }} шт.</span>
+                {% else %}
+                    <span class="badge bg-danger">Нет в наличии</span>
+                {% endif %}
+            </div>
+            
+            <div class="mb-4">
+                <p>{{ product.description|linebreaks }}</p>
+            </div>
+            
+            {% if product.available %}
+                <form action="{% url 'shop:add_to_cart' product.id %}" method="post">
+                    {% csrf_token %}
+                    <div class="input-group mb-3" style="max-width: 200px;">
+                        <input type="number" name="quantity" value="1" min="1" max="{{ product.quantity }}" class="form-control">
+                        <button type="submit" class="btn btn-primary">В корзину</button>
+                    </div>
+                </form>
+            {% endif %}
+            
+            <div class="mt-4">
+                <strong>Категория:</strong> 
+                <a href="{% url 'shop:category_products' product.category.slug %}">{{ product.category.name }}</a>
+            </div>
+        </div>
+    </div>
+    
+    {% if related_products %}
+    <div class="mt-5">
+        <h3>С этим товаром покупают</h3>
+        <div class="row">
+            {% for product in related_products %}
+            <div class="col-md-3">
+                <div class="card product-card">
+                    <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name|truncatechars:30 }}</h5>
+                        <p class="card-text">{{ product.price }} руб.</p>
+                        <a href="{% url 'shop:product_detail' product.id %}" class="btn btn-sm btn-outline-primary">Подробнее</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

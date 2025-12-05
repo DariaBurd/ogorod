@@ -1,0 +1,54 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Оформление заказа</h2>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label">Телефон для связи</label>
+                    <input type="text" name="phone" class="form-control" value="{{ user.phone }}" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Адрес доставки</label>
+                    <textarea name="address" class="form-control" rows="3">{% if user.address %}{{ user.address }}{% endif %}</textarea>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Комментарий к заказу</label>
+                    <textarea name="comment" class="form-control" rows="3" placeholder="Особенности доставки, пожелания и т.д."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-success btn-lg">Подтвердить заказ</button>
+            </form>
+        </div>
+        
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    Ваш заказ
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for item in cart.items.all %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>{{ item.product.name }} × {{ item.quantity }}</span>
+                            <span>{{ item.total_price }} руб.</span>
+                        </li>
+                        {% endfor %}
+                        <li class="list-group-item d-flex justify-content-between">
+                            <strong>Итого:</strong>
+                            <strong>{{ cart.total_amount }} руб.</strong>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

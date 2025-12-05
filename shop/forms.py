@@ -12,13 +12,28 @@ class CustomerRegistrationForm(UserCreationForm):
     last_name = forms.CharField(max_length=100, required=True)
     email = forms.EmailField(required=True)
 
+    password1 = forms.CharField(
+        label="Пароль",
+        widget=forms.PasswordInput(attrs={'placeholder': 'Придумайте пароль'})
+    )
+    password2 = forms.CharField(
+        label="Подтверждение пароля",
+        widget=forms.PasswordInput(attrs={'placeholder': 'Повторите пароль'})
+    )
+
     class Meta:
         model = Customer
         fields = ['email', 'phone', 'first_name', 'last_name', 'password1', 'password2']
+        labels = {
+            'email': 'Электронная почта',
+            'phone': 'Номер телефона',
+            'first_name': 'Имя',
+            'last_name': 'Фамилия',
+        }
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.username = user.email  # На всякий случай
+        user.username = user.email
         if commit:
             user.save()
         return user

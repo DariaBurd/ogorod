@@ -1,35 +1,95 @@
-<div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+<!-- templates/shop/includes/product_card.html -->
+<div class="col-md-3 mb-4">
     <div class="card product-card h-100 shadow-sm">
         {% if product.has_discount %}
-        <span class="badge bg-danger position-absolute top-0 start-0 m-2">-{{ product.discount_percent }}%</span>
+            <div class="discount-badge">
+                -{{ product.discount_percent }}%
+            </div>
         {% endif %}
 
-        <img src="{% if product.image %}{{ product.image.url }}{% else %}https://via.placeholder.com/300x200/e9ecef/6c757d?text=Нет+изображения{% endif %}"
-             class="card-img-top" alt="{{ product.name }}" style="height: 200px; object-fit: cover;">
+        <a href="{% url 'shop:product_detail' product.id %}">
+            <img src="{{ product.image.url }}"
+                 class="card-img-top"
+                 alt="{{ product.name }}"
+                 style="height: 200px; object-fit: cover;">
+        </a>
 
         <div class="card-body d-flex flex-column">
-            <h6 class="card-title">{{ product.name }}</h6>
-            <p class="card-text small text-muted flex-grow-1">{{ product.short_description|default:product.description|truncatewords:10 }}</p>
+            <h5 class="card-title">
+                <a href="{% url 'shop:product_detail' product.id %}" class="text-decoration-none text-dark">
+                    {{ product.name|truncatechars:40 }}
+                </a>
+            </h5>
+
+            <div class="price-section mb-2">
+                {% if product.has_discount %}
+                    <span class="old-price text-muted" style="text-decoration: line-through;">
+                        {{ product.old_price }} руб.
+                    </span>
+                    <br>
+                    <span class="current-price text-danger fw-bold h5">
+                        {{ product.price }} руб.
+                    </span>
+                {% else %}
+                    <span class="current-price fw-bold h5">{{ product.price }} руб.</span>
+                {% endif %}
+            </div>
+
+            <div class="availability mb-2">
+                {% if product.available %}
+                    <span class="badge bg-success">В наличии</span>
+                {% else %}
+                    <span class="badge bg-secondary">Нет в наличии</span>
+                {% endif %}
+            </div>
+
+            <p class="card-text text-muted small">
+                {{ product.short_description|default:product.description|truncatechars:60 }}
+            </p>
 
             <div class="mt-auto">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    {% if product.has_discount %}
-                    <span class="text-danger fw-bold">{{ product.price }} ₽</span>
-                    <small class="text-muted text-decoration-line-through">{{ product.old_price }} ₽</small>
-                    {% else %}
-                    <span class="fw-bold">{{ product.price }} ₽</span>
-                    {% endif %}
-                </div>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'shop:product_detail' product.id %}"
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-eye me-1"></i>Подробнее
+                    </a>
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">
-                        <i class="fas fa-box me-1"></i>{{ product.quantity }} шт.
-                    </small>
-                    <button class="btn btn-success btn-sm" {% if not product.available %}disabled{% endif %}>
-                        <i class="fas fa-cart-plus"></i>
-                    </button>
+                    {% if product.available %}
+                        <form action="{% url 'shop:add_to_cart' product.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-success btn-sm w-100">
+                                <i class="fas fa-cart-plus me-1"></i>В корзину
+                            </button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+.product-card {
+    transition: transform 0.3s;
+    border: 1px solid #e0e0e0;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.discount-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #dc3545;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    z-index: 1;
+}
+</style>

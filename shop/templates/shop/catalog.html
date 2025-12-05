@@ -35,7 +35,10 @@
                         <i class="fas fa-tools fa-3x text-success mb-3"></i>
                         <h5 class="card-title">{{ category.name }}</h5>
                         <p class="card-text text-muted">{{ category.description|default:"Лучшие товары для сада" }}</p>
-                        <a href="#" class="btn btn-outline-success">Смотреть товары</a>
+                        <!-- ИСПРАВЛЕННАЯ ССЫЛКА -->
+                        <a href="{% url 'shop:category_products' category.slug %}" class="btn btn-outline-success">
+                            Смотреть товары
+                        </a>
                     </div>
                 </div>
             </div>
